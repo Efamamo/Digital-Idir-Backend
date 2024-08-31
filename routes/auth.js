@@ -23,6 +23,8 @@ router.post(
   ],
   authController.signup
 );
+
+router.post("/token",authController.refresh)
 router.post(
   "/login",
   [
@@ -31,6 +33,6 @@ router.post(
   ],
   authController.login
 );
-router.post("/logout", authController.logout);
+router.delete("/logout", authController.logout);
 
 module.exports = router;
