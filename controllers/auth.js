@@ -3,6 +3,7 @@ const fs = require("fs");
 
 const User = require("../models/user");
 const passwordService = require("../services/password-service");
+const jwtService = require("../services/jwt-service");
 
 const signup = async (req, res) => {
   const errors = validationResult(req);
@@ -30,7 +31,7 @@ const signup = async (req, res) => {
       phoneNumber,
     });
     const user = await newUser.save();
-    return res.json(user);
+    return res.status(201).json(user);
   } catch (e) {
     fs.unlink(req.file.path, (err) => {
       console.log(err);
@@ -61,7 +62,9 @@ const login = async (req, res) => {
     return res.status(401).send({ error: "invalid credentials" });
   }
 
-  res.send("signin successfully");
+  const token = jwtService.generateToken(user);
+
+  res.status(201).send({ accessToken: token });
 };
 
 const logout = (req, res) => {
