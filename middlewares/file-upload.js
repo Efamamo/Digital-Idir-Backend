@@ -4,6 +4,8 @@ const MIME_TYPES = {
   "image/png": "png",
   "image/jpg": "jpg",
   "image/jpeg": "jpeg",
+  "image/avif": "avif",
+  "image/webp": "webp"
 };
 const fileUpload = multer({
   storage: multer.diskStorage({

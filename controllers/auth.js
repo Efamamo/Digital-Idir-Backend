@@ -14,16 +14,29 @@ const signup = async (req, res) => {
     errors.array().forEach((error) => {
       formattedErrors[error.path] = error.msg;
     });
-
-    fs.unlink(req.file.path, (err) => {
-      console.log(err);
-    });
+    
+    fs.unlink(req.file.path, (err) => {console.log(err);});
 
     return res.status(400).send({ errors: formattedErrors });
   }
   const { username, email, password, phoneNumber } = req.body;
 
+
   try {
+    let u = await User.findOne({username})
+
+    if (u){
+        fs.unlink(req.file.path, (err) => { console.log(err); });
+        return res.status(409).send({error: `username ${username} already taken`})
+    }
+
+    u = await User.findOne({email})
+
+    if (u){
+        fs.unlink(req.file.path, (err) => {console.log(err);});
+        return res.status(409).send({error: `email ${email} already taken`})
+    }
+
     const hashedPassword = await passwordService.hashPassword(password);
     const newUser = new User({
       username,
@@ -34,11 +47,11 @@ const signup = async (req, res) => {
     });
     const user = await newUser.save();
     return res.status(201).json(user);
+    
   } catch (e) {
-    fs.unlink(req.file.path, (err) => {
-      console.log(err);
-    });
+    fs.unlink(req.file.path, (err) => {console.log(err);});
 
+    
     res.status(500).send({ error: e });
   }
 };
