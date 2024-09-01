@@ -8,6 +8,7 @@ const passwordService = require("../services/password-service");
 const jwtService = require("../services/jwt-service");
 
 const signup = async (req, res) => {
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const formattedErrors = {};
@@ -23,18 +24,11 @@ const signup = async (req, res) => {
 
 
   try {
-    let u = await User.findOne({username})
-
-    if (u){
-        fs.unlink(req.file.path, (err) => { console.log(err); });
-        return res.status(409).send({error: `username ${username} already taken`})
-    }
-
     u = await User.findOne({email})
 
     if (u){
         fs.unlink(req.file.path, (err) => {console.log(err);});
-        return res.status(409).send({error: `email ${email} already taken`})
+        return res.status(409).send({error: `email ${email} is taken`})
     }
 
     const hashedPassword = await passwordService.hashPassword(password);
@@ -45,13 +39,12 @@ const signup = async (req, res) => {
       imageUrl: req.file.path,
       phoneNumber,
     });
+
     const user = await newUser.save();
     return res.status(201).json(user);
-    
+
   } catch (e) {
     fs.unlink(req.file.path, (err) => {console.log(err);});
-
-    
     res.status(500).send({ error: e });
   }
 };
@@ -68,11 +61,16 @@ const login = async (req, res) => {
     return res.status(400).send({ errors: formattedErrors });
   }
 
-  const { username, password } = req.body;
-  const user = await User.findOne({ username });
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
 
   if (!user) {
     return res.status(401).send({ error: "invalid credentials" });
+  }
+  
+  if (!user.password){
+    return res.status(401).send({ error: "user can only login using google" });
+
   }
 
   const match = await passwordService.comparePasswords(password, user.password);
@@ -134,7 +132,31 @@ const logout = async (req, res) => {
     }
 };
 
+const googleCallback = (req, res) => {
+  if (req.user) {
+    const { user, accessToken, refreshToken } = req.user; // Destructure everything from req.user
+
+    // Check if both tokens are present
+    if (accessToken && refreshToken) {
+      res.json({
+                  // Send user info
+        accessToken,   // Send access token
+        refreshToken,  // Send refresh token
+      });
+    } else {
+      // If user exists but tokens do not, just send the user info
+      res.json(
+        user,
+      );
+    }
+  } else {
+    res.status(401).json({ message: 'Authentication failed' });
+  }
+
+};
+
 exports.login = login;
 exports.signup = signup;
 exports.logout = logout;
 exports.refresh = refresh
+exports.googleCallback = googleCallback

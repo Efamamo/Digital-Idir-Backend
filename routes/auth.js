@@ -1,5 +1,6 @@
 const express = require("express");
 const { check } = require("express-validator");
+const passport = require("passport")
 
 const fileUpload = require("../middlewares/file-upload");
 
@@ -28,11 +29,18 @@ router.post("/token",authController.refresh)
 router.post(
   "/login",
   [
-    check("username").notEmpty().withMessage("username cant be empty"),
+    check("email").notEmpty().withMessage("email cant be empty"),
+    check("email").normalizeEmail().isEmail().withMessage("email is invalid"),
     check("password").notEmpty().withMessage("password cant be empty"),
   ],
   authController.login
 );
 router.delete("/logout", authController.logout);
+
+router.get("/google", passport.authenticate('google', {
+  scope: ['profile', 'email']
+}))
+
+router.get("/callback",passport.authenticate("google", { session: false}), authController.googleCallback)
 
 module.exports = router;
