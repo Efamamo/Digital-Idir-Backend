@@ -47,7 +47,7 @@ const addNews = async (req, res) => {
     const news = new News({
       title,
       description,
-      imageUrl: req.file.path,
+      imageUrl: req.file ? req.file.path : '',
     });
 
     const result = await news.save();
