@@ -1,11 +1,13 @@
 const { validationResult } = require('express-validator');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 const User = require('../models/user');
 const Refresh = require('../models/refresh');
 const passwordService = require('../services/password-service');
 const jwtService = require('../services/jwt-service');
+const sendVerification = require('../cron/verification');
 
 const signup = async (req, res) => {
   const errors = validationResult(req);
@@ -44,11 +46,16 @@ const signup = async (req, res) => {
       email,
       imageUrl: req.file ? req.file.path : '',
       phoneNumber,
+      verificationToken: crypto.randomBytes(32).toString('hex'),
+      tokenExpiration: Date.now() + 3600000,
     });
 
+    sendVerification(newUser);
+
     const user = await newUser.save();
-    return res.status(201).json(user);
+    return res.status(201).send({ message: 'verify your email' });
   } catch (e) {
+    console.log(e);
     if (req.file) {
       fs.unlink(req.file.path, (err) => {
         console.log(err);
@@ -78,7 +85,11 @@ const login = async (req, res) => {
   }
 
   if (!user.password) {
-    return res.status(401).send({ error: 'user can only login using google' });
+    return res.status(400).send({ error: 'user can only login using google' });
+  }
+
+  if (!user.isVerified) {
+    return res.status(400).send({ error: 'email not verified' });
   }
 
   const match = await passwordService.comparePasswords(password, user.password);
@@ -153,8 +164,31 @@ const googleCallback = (req, res) => {
   }
 };
 
+const verifyToken = async (req, res) => {
+  try {
+    const user = await User.findOne({
+      verificationToken: req.params.token,
+      tokenExpiration: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).send('Invalid or expired token');
+    }
+
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    user.tokenExpiration = undefined;
+    await user.save();
+
+    res.send('Email successfully verified');
+  } catch (error) {
+    res.status(500).send('Internal server error');
+  }
+};
+
 exports.login = login;
 exports.signup = signup;
 exports.logout = logout;
 exports.refresh = refresh;
 exports.googleCallback = googleCallback;
+exports.verifyToken = verifyToken;

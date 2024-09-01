@@ -6,6 +6,9 @@ const userSchema = new mongoose.Schema({
   phoneNumber: { type: String },
   password: { type: String },
   imageUrl: { type: String },
+  verificationToken: { type: String },
+  tokenExpiration: { type: Date },
+  isVerified: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model('User', userSchema);
