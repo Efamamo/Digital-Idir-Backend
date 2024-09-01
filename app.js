@@ -7,6 +7,8 @@ require('./services/passport-setup');
 require('./cron/reminder');
 const authRouter = require('./routes/auth');
 const eventRouter = require('./routes/event');
+const newsRouter = require('./routes/news');
+const announcementRouter = require('./routes/announcement');
 
 mongoose
   .connect('mongodb://localhost:27017/digital-idir')
@@ -24,5 +26,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/events', eventRouter);
+app.use('/api/v1/news', newsRouter);
+app.use('/api/v1/announcements', announcementRouter);
 
 app.listen(5000);
