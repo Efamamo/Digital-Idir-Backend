@@ -1,21 +1,28 @@
-const express = require('express')
-const cors = require('cors')
-const mongoose = require('mongoose')
-const cookieParser = require('cookie-parser')
-const path = require("path")
-require("./services/passport-setup")
+const express = require('express');
+const cors = require('cors');
+const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
+const path = require('path');
+require('./services/passport-setup');
+require('./cron/reminder');
+const authRouter = require('./routes/auth');
+const eventRouter = require('./routes/event');
 
-mongoose.connect("mongodb://localhost:27017/digital-idir").then(()=>{console.log("Connected To The DataBase")}).catch((e)=>{console.log(e)})
-const authRouter = require("./routes/auth")
+mongoose
+  .connect('mongodb://localhost:27017/digital-idir')
+  .then(() => {
+    console.log('Connected To The DataBase');
+  })
+  .catch((e) => {
+    console.log(e);
+  });
 
+const app = express();
+app.use('/uploads/images', express.static(path.join('uploads', 'images')));
+app.use(cors());
+app.use(cookieParser());
+app.use(express.json());
+app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/events', eventRouter);
 
-
-const app = express()
-app.use("/uploads/images", express.static(path.join("uploads", "images")))
-app.use(cors())
-app.use(cookieParser())
-app.use(express.json())
-app.use("/api/v1/auth", authRouter)
-
-
-app.listen(5000)
+app.listen(5000);
