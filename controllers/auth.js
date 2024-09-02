@@ -8,6 +8,8 @@ const Refresh = require('../models/refresh');
 const passwordService = require('../services/password-service');
 const jwtService = require('../services/jwt-service');
 const sendVerification = require('../cron/verification');
+const sendPasswordResetLink = require('../cron/reset-link');
+const { use } = require('passport');
 
 const signup = async (req, res) => {
   const errors = validationResult(req);
@@ -186,9 +188,161 @@ const verifyToken = async (req, res) => {
   }
 };
 
+const updateProfile = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const formattedErrors = {};
+    errors.array().forEach((error) => {
+      formattedErrors[error.path] = error.msg;
+    });
+    if (req.file) {
+      fs.unlink(req.file.path, (err) => {
+        console.log(err);
+      });
+    }
+
+    return res.status(400).send({ errors: formattedErrors });
+  }
+
+  const { username, phoneNumber } = req.body;
+
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      if (req.file) {
+        fs.unlink(req.file.path, (err) => {
+          console.log(err);
+        });
+      }
+
+      return res
+        .status(404)
+        .send({ error: 'user with given userid not found' });
+    }
+
+    user.username = username;
+    user.phoneNumber = phoneNumber;
+
+    if (req.file) {
+      user.imageUrl = req.file.path;
+    }
+
+    await user.save();
+    return res.status(204).send();
+  } catch (e) {
+    if (req.file) {
+      fs.unlink(req.file.path, (err) => {
+        console.log(err);
+      });
+    }
+    res.status(500).send({ error: e });
+  }
+};
+
+const changePassword = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const formattedErrors = {};
+    errors.array().forEach((error) => {
+      formattedErrors[error.path] = error.msg;
+    });
+
+    return res.status(400).send({ errors: formattedErrors });
+  }
+
+  const { oldPassword, newPassword } = req.body;
+
+  try {
+    const user = await User.findById(req.user.id);
+    const match = await passwordService.comparePasswords(
+      oldPassword,
+      user.password
+    );
+    if (!match) {
+      return res.status(401).send({ error: 'old Password is incorrect' });
+    }
+
+    const hashedPassword = await passwordService.hashPassword(newPassword);
+
+    user.password = hashedPassword;
+    await user.save();
+
+    return res.status(204).send();
+  } catch (e) {
+    res.status(500).send({ error: e });
+  }
+};
+
+const forgotPassword = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const formattedErrors = {};
+    errors.array().forEach((error) => {
+      formattedErrors[error.path] = error.msg;
+    });
+
+    return res.status(400).send({ errors: formattedErrors });
+  }
+  const { email } = req.body;
+
+  // Find user by email
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).send('User not found');
+  }
+
+  // Generate a token
+  const token = crypto.randomBytes(32).toString('hex');
+  user.resetPasswordToken = token;
+  user.resetPasswordExpires = Date.now() + 3600000; // 1 hour from now
+
+  await user.save();
+
+  await sendPasswordResetLink(token, user);
+
+  res.send('Password reset email sent');
+};
+
+const resetPassword = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const formattedErrors = {};
+    errors.array().forEach((error) => {
+      formattedErrors[error.path] = error.msg;
+    });
+
+    return res.status(400).send({ errors: formattedErrors });
+  }
+  const token = req.query.token;
+  const { newPassword } = req.body;
+
+  const user = await User.findOne({
+    resetPasswordToken: token,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return res.status(400).send('Invalid or expired token');
+  }
+
+  // Hash the new password and save it
+  user.password = await passwordService.hashPassword(newPassword);
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+
+  await user.save();
+
+  res.send('Password has been reset');
+};
+
 exports.login = login;
 exports.signup = signup;
 exports.logout = logout;
 exports.refresh = refresh;
 exports.googleCallback = googleCallback;
 exports.verifyToken = verifyToken;
+exports.updateProfile = updateProfile;
+exports.changePassword = changePassword;
+exports.forgotPassword = forgotPassword;
+exports.resetPassword = resetPassword;

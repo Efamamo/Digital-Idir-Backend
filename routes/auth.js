@@ -5,6 +5,7 @@ const passport = require('passport');
 const fileUpload = require('../middlewares/file-upload');
 
 const authController = require('../controllers/auth');
+const authenticateToken = require('../middlewares/authenticate');
 
 const router = express.Router();
 
@@ -51,5 +52,40 @@ router.get(
 );
 
 router.get('/verify/:token', authController.verifyToken);
+router.patch(
+  '/update-profile',
+  authenticateToken,
+  fileUpload.single('image'),
+  [
+    check('username').notEmpty().withMessage('username cant be empty'),
+    check('phoneNumber').notEmpty().withMessage('phoneNumber cant be empty'),
+  ],
+
+  authController.updateProfile
+);
+router.patch(
+  '/change-password',
+  authenticateToken,
+  [
+    check('oldPassword').notEmpty().withMessage('oldPassword cant be empty'),
+    check('newPassword').notEmpty().withMessage('newPassword cant be empty'),
+  ],
+  authController.changePassword
+);
+
+router.patch(
+  '/forget-password',
+  [
+    check('email').notEmpty().withMessage('email cant be empty'),
+    check('email').normalizeEmail().isEmail().withMessage('email is invalid'),
+  ],
+  authController.forgotPassword
+);
+
+router.patch(
+  '/reset-password',
+  check('newPassword').notEmpty().withMessage('newPassword cant be empty'),
+  authController.resetPassword
+);
 
 module.exports = router;

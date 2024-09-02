@@ -8,6 +8,8 @@ const userSchema = new mongoose.Schema({
   imageUrl: { type: String },
   verificationToken: { type: String },
   tokenExpiration: { type: Date },
+  resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date },
   isVerified: { type: Boolean, default: false },
   borrowedItems: { type: Array, default: [] },
   isAdmin: { type: Boolean, default: false },
