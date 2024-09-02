@@ -1,6 +1,7 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const User = require('../models/user');
 const Transaction = require('../models/transaction');
+const transaction = require('../models/transaction');
 const monthlyPayment = async (req, res) => {
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
@@ -63,5 +64,30 @@ const stripeSuccess = async (req, res) => {
   }
 };
 
+const getUserTransactions = async (req, res) => {
+  const userId = req.params.id;
+  try {
+    const transactions = await Transaction.find({ userId });
+    return res.json(transactions);
+  } catch (e) {
+    res.status(500).send({ error: 'server error' });
+  }
+};
+
+const getTransactionById = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const transaction = await Transaction.findById(id);
+    if (!transaction) {
+      return res.status(404).send({ error: 'transaction not found' });
+    }
+    return res.json(transaction);
+  } catch (e) {
+    res.status(500).send({ error: 'server error' });
+  }
+};
+
 exports.monthlyPayment = monthlyPayment;
 exports.stripeSuccess = stripeSuccess;
+exports.getTransactionById = getTransactionById;
+exports.getUserTransactions = getUserTransactions;
