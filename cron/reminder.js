@@ -36,7 +36,38 @@ cron.schedule('* * * * *', async () => {
             to: user.email,
             from: `Digital Idir <${process.env.SENDGRID_SENDER_EMAIL}>`,
             subject: `Reminder: ${event.title}`,
-            text: `Hello ${user.username}, this is a reminder for today's event: "${event.title}" at ${event.date}. Location: ${event.location}. Description: ${event.description}.`,
+            html: `
+        <html>
+          <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+              <h2 style="color: #333333;">Hello ${user.username},</h2>
+              <p style="font-size: 16px; line-height: 1.6; color: #555555;">
+                This is a friendly reminder for today's event:
+              </p>
+              <h2 style="color: #1a73e8; font-size: 24px; margin: 10px 0;">${event.title}</h2>
+              <p style="font-size: 16px; line-height: 1.6; color: #555555;">
+                <strong>Date:</strong> ${event.date}
+              </p>
+              <p style="font-size: 16px; line-height: 1.6; color: #555555;">
+                <strong>Location:</strong> ${event.location}
+              </p>
+              <p style="font-size: 16px; line-height: 1.6; color: #555555;">
+                <strong>Description:</strong>
+              </p>
+              <p style="font-size: 16px; line-height: 1.6; color: #555555;">
+                ${event.description}
+              </p>
+              <p style="font-size: 16px; line-height: 1.6; color: #555555;">
+                We look forward to seeing you there!
+              </p>
+              <p style="font-size: 16px; line-height: 1.6; color: #555555;">
+                Best regards,<br>
+                <strong>Digital Idir Team</strong>
+              </p>
+            </div>
+          </body>
+        </html>
+      `,
           };
           await sgMail.send(msg);
         }

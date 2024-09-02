@@ -18,17 +18,30 @@ cron.schedule('0 0 1 * *', async () => {
         from: `Digital Idir <${process.env.SENDGRID_SENDER_EMAIL}>`,
         subject: `Monthly Payment`,
         html: `
-            <html>
-              <body>
-                <p>Hello ${user.username},</p>
-                <p>This is a reminder to pay your monthly fee. Have you made the payment?</p>
-                <p>If not, please make the payment using the link below:</p>
-                <p><a href="${paymentLink}">Pay Now</a></p>
-                <p>Thank you!</p>
-                <p>Best regards,<br>Digital Idir Team</p>
-              </body>
-            </html>
-          `,
+        <html>
+          <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+              <h2 style="color: #333333;">Hello ${user.username},</h2>
+              <p style="font-size: 16px; line-height: 1.6; color: #555555;">
+                This is a friendly reminder to pay your monthly fee. Have you had a chance to make the payment?
+              </p>
+              <p style="font-size: 16px; line-height: 1.6; color: #555555;">
+                If not, please complete your payment using the link below:
+              </p>
+              <p style="font-size: 16px; line-height: 1.6; color: #555555;">
+                <a href="${paymentLink}" style="color: #1a73e8; text-decoration: none; font-weight: bold;">Pay Now</a>
+              </p>
+              <p style="font-size: 16px; line-height: 1.6; color: #555555;">
+                Thank you!
+              </p>
+              <p style="font-size: 16px; line-height: 1.6; color: #555555;">
+                Best regards,<br>
+                <strong>Digital Idir Team</strong>
+              </p>
+            </div>
+          </body>
+        </html>
+      `,
       };
       await sgMail.send(msg);
     }
