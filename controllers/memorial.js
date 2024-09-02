@@ -1,5 +1,6 @@
 const Memorial = require('../models/memorial');
 const { validationResult } = require('express-validator');
+const fs = require('fs');
 
 const getMemorials = async (req, res) => {
   try {

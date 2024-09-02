@@ -7,9 +7,9 @@ const sendNotification = async (news) => {
   for (const user of users) {
     const msg = {
       to: user.email,
-      from: `"Digital Idir" <${process.env.SENDGRID_SENDER_EMAIL}>`,
+      from: `Digital Idir <${process.env.SENDGRID_SENDER_EMAIL}>`,
       subject: 'News Added',
-      text: `Hello ${user.username}, news about ${news.title} added `,
+      text: `Hello ${user.username}, news about ${news.title} just added `,
     };
     await sgMail.send(msg);
   }

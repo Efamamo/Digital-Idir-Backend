@@ -5,11 +5,15 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 require('./services/passport-setup');
 require('./cron/reminder');
+require('./cron/return-item');
+require('./cron/payment-notification');
 const authRouter = require('./routes/auth');
 const eventRouter = require('./routes/event');
 const newsRouter = require('./routes/news');
 const announcementRouter = require('./routes/announcement');
 const memorialRouter = require('./routes/memorial');
+const itemRouter = require('./routes/item');
+const transactionRouter = require('./routes/transaction');
 
 mongoose
   .connect('mongodb://localhost:27017/digital-idir')
@@ -30,5 +34,7 @@ app.use('/api/v1/events', eventRouter);
 app.use('/api/v1/news', newsRouter);
 app.use('/api/v1/announcements', announcementRouter);
 app.use('/api/v1/memorials', memorialRouter);
+app.use('/api/v1/items', itemRouter);
+app.use('/api/v1/transactions', transactionRouter);
 
 app.listen(5000);

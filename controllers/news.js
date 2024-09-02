@@ -1,7 +1,7 @@
 const News = require('../models/news');
 const { validationResult } = require('express-validator');
 const sendNotification = require('../cron/notification');
-
+const fs = require('fs')
 const getNews = async (req, res) => {
   try {
     const news = await News.find();

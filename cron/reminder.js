@@ -34,7 +34,7 @@ cron.schedule('* * * * *', async () => {
           // Send email reminder to each user for each event
           const msg = {
             to: user.email,
-            from: `"Digital Idir" <${process.env.SENDGRID_SENDER_EMAIL}>`,
+            from: `Digital Idir <${process.env.SENDGRID_SENDER_EMAIL}>`,
             subject: `Reminder: ${event.title}`,
             text: `Hello ${user.username}, this is a reminder for today's event: "${event.title}" at ${event.date}. Location: ${event.location}. Description: ${event.description}.`,
           };

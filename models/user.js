@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
   verificationToken: { type: String },
   tokenExpiration: { type: Date },
   isVerified: { type: Boolean, default: false },
+  borrowedItems: { type: Array, default: [] },
 });
 
 module.exports = mongoose.model('User', userSchema);
