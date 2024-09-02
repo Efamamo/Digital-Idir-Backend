@@ -1,11 +1,15 @@
 const express = require('express');
-const { check } = require('express-validator');
 const transactionController = require('../controllers/transaction');
 const router = express.Router();
+const authenticateToken = require('../middlewares/authenticate');
 
 router.get('/monthly-payment', transactionController.monthlyPayment);
 router.get('/success', transactionController.stripeSuccess);
-router.get('/users/:id', transactionController.getUserTransactions);
-router.get('/:id', transactionController.getTransactionById);
+router.get(
+  '/users/:id',
+  authenticateToken,
+  transactionController.getUserTransactions
+);
+router.get('/:id', authenticateToken, transactionController.getTransactionById);
 
 module.exports = router;

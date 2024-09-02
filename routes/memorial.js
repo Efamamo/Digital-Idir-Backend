@@ -1,13 +1,16 @@
 const express = require('express');
 const { check } = require('express-validator');
-
+const authenticateToken = require('../middlewares/authenticate');
+const authorizeAdmin = require('../middlewares/authorize-admin');
 const memorialController = require('../controllers/memorial');
 const router = express.Router();
 
-router.get('/', memorialController.getMemorials);
-router.get('/:id', memorialController.getMemorialById);
+router.get('/', authenticateToken, memorialController.getMemorials);
+router.get('/:id', authenticateToken, memorialController.getMemorialById);
 router.post(
   '/',
+  authenticateToken,
+  authorizeAdmin,
   [
     check('name').notEmpty().withMessage('name is required'),
     check('dateOfBirth').isDate().withMessage('dateOfBirth is invalid'),
@@ -17,6 +20,9 @@ router.post(
 );
 router.patch(
   '/:id',
+
+  authenticateToken,
+  authorizeAdmin,
   [
     check('name').notEmpty().withMessage('name is required'),
     check('dateOfBirth').isDate().withMessage('dateOfBirth is invalid'),
@@ -24,6 +30,11 @@ router.patch(
   ],
   memorialController.updateMemorial
 );
-router.delete('/:id', memorialController.deleteMemorial);
+router.delete(
+  '/:id',
+  authenticateToken,
+  authorizeAdmin,
+  memorialController.deleteMemorial
+);
 
 module.exports = router;

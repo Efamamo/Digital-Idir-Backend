@@ -1,13 +1,17 @@
 const express = require('express');
 const { check } = require('express-validator');
+const authenticateToken = require('../middlewares/authenticate');
+const authorizeAdmin = require('../middlewares/authorize-admin');
 
 const eventController = require('../controllers/event');
 const router = express.Router();
 
-router.get('/', eventController.getEvents);
-router.get('/:id', eventController.getEventById);
+router.get('/', authenticateToken, eventController.getEvents);
+router.get('/:id', authenticateToken, eventController.getEventById);
 router.post(
   '/',
+  authenticateToken,
+  authorizeAdmin,
   [
     check('title').notEmpty().withMessage('title is required'),
     check('title').isLength(10).withMessage('minimum title length is 10'),
@@ -23,6 +27,8 @@ router.post(
 );
 router.patch(
   '/:id',
+  authenticateToken,
+  authorizeAdmin,
   [
     check('title').notEmpty().withMessage('title is required'),
     check('title').isLength(10).withMessage('minimum title length is 10'),
@@ -36,6 +42,11 @@ router.patch(
   ],
   eventController.updateEvent
 );
-router.delete('/:id', eventController.deleteEvent);
+router.delete(
+  '/:id',
+  authenticateToken,
+  authorizeAdmin,
+  eventController.deleteEvent
+);
 
 module.exports = router;

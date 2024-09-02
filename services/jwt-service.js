@@ -7,7 +7,8 @@ function generateToken(user) {
     
     const payload = {
         id: user._id,
-        username: user.username
+        username: user.username,
+        isAdmin: user.isAdmin
     };
 
     const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '15m' });

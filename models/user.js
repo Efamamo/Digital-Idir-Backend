@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
   tokenExpiration: { type: Date },
   isVerified: { type: Boolean, default: false },
   borrowedItems: { type: Array, default: [] },
+  isAdmin: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model('User', userSchema);

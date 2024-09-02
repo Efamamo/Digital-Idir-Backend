@@ -1,16 +1,20 @@
 const express = require('express');
 const { check } = require('express-validator');
 const fileUpload = require('../middlewares/file-upload');
+const authenticateToken = require('../middlewares/authenticate');
+const authorizeAdmin = require('../middlewares/authorize-admin');
 
 const itemController = require('../controllers/item');
 const router = express.Router();
 
-router.get('/', itemController.getItems);
+router.get('/', authenticateToken, itemController.getItems);
 router.get('/success', itemController.stripeSuccess);
 
-router.get('/:id', itemController.getItemById);
+router.get('/:id', authenticateToken, itemController.getItemById);
 router.post(
   '/',
+  authenticateToken,
+  authorizeAdmin,
   fileUpload.single('image'),
   [
     check('name').notEmpty().withMessage('name is required'),
@@ -22,6 +26,7 @@ router.post(
 
 router.patch(
   '/borrow',
+  authenticateToken,
   [
     check('userId').notEmpty().withMessage('userId is required'),
     check('items')
@@ -41,6 +46,7 @@ router.patch(
 
 router.patch(
   '/return',
+  authenticateToken,
   [
     check('userId').notEmpty().withMessage('userId is required'),
     check('items')
@@ -60,6 +66,7 @@ router.patch(
 
 router.patch(
   '/order-rent',
+  authenticateToken,
   [
     check('items')
       .notEmpty()
@@ -78,6 +85,8 @@ router.patch(
 
 router.patch(
   '/return-rent',
+  authenticateToken,
+  authorizeAdmin,
   [
     check('items')
       .notEmpty()
@@ -94,10 +103,17 @@ router.patch(
   itemController.returnRentItems
 );
 
-router.patch('/rent/:id', itemController.rentItems);
+router.patch(
+  '/rent/:id',
+  authenticateToken,
+  authorizeAdmin,
+  itemController.rentItems
+);
 
 router.patch(
   '/:id',
+  authenticateToken,
+  authorizeAdmin,
   fileUpload.single('image'),
   [
     check('name').notEmpty().withMessage('name is required'),
@@ -106,6 +122,11 @@ router.patch(
   ],
   itemController.updateItem
 );
-router.delete('/:id', itemController.deleteItem);
+router.delete(
+  '/:id',
+  authenticateToken,
+  authorizeAdmin,
+  itemController.deleteItem
+);
 
 module.exports = router;
