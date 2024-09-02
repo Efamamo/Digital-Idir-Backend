@@ -76,6 +76,24 @@ router.patch(
   itemController.checkoutSession
 );
 
+router.patch(
+  '/return-rent',
+  [
+    check('items')
+      .notEmpty()
+      .withMessage('items are required')
+      .isArray()
+      .withMessage('items should be an array'),
+    check('items.*.name').notEmpty().withMessage('Each item must have name'),
+    check('items.*.amount')
+      .notEmpty()
+      .withMessage('Each item must have an amount')
+      .isInt({ gt: 0 })
+      .withMessage('Each item amount must be a positive integer'),
+  ],
+  itemController.returnRentItems
+);
+
 router.patch('/rent/:id', itemController.rentItems);
 
 router.patch(

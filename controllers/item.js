@@ -298,7 +298,7 @@ const checkoutSession = async (req, res) => {
     const errors = [];
     for (const item of req.body.items) {
       const { id, amount } = item;
-      
+
       const i = await Item.findById(id);
       if (!i) {
         errors.push(`item with id ${id} not found`);
@@ -340,7 +340,6 @@ const checkoutSession = async (req, res) => {
     res.status(500).send({ error: e.message });
   }
 };
-
 
 const stripeSuccess = async (req, res) => {
   const session_id = req.query.session_id;
@@ -409,6 +408,49 @@ const rentItems = async (req, res) => {
   }
 };
 
+const returnRentItems = async (req, res) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    const formattedErrors = {};
+    errors.array().forEach((error) => {
+      formattedErrors[error.path] = error.msg;
+    });
+
+    return res.status(400).send({ errors: formattedErrors });
+  }
+
+  try {
+    const errors = [];
+
+    for (const item of req.body.items) {
+      const { name } = item;
+      const n = name.toLowerCase();
+      const i = await Item.findOne({ name: n });
+      if (!i) {
+        errors.push(`name: ${name} not found`);
+      }
+    }
+
+    if (errors.length !== 0) {
+      return res.status(400).send({ errors });
+    }
+
+    for (const item of req.body.items) {
+      const { name, amount } = item;
+      const n = name.toLowerCase();
+      const i = await Item.findOne({ name: n });
+
+      i.amount += amount;
+      await i.save();
+    }
+    res.json({ items: req.body.items });
+  } catch (e) {
+    console.log(e);
+    res.status(500).send({ error: 'Server error' });
+  }
+};
+
 exports.getItems = getItems;
 exports.getItemById = getItemById;
 exports.addItem = addItem;
@@ -419,3 +461,4 @@ exports.returnItems = returnItems;
 exports.checkoutSession = checkoutSession;
 exports.stripeSuccess = stripeSuccess;
 exports.rentItems = rentItems;
+exports.returnRentItems = returnRentItems;
