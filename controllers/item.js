@@ -134,8 +134,8 @@ const borrowItem = async (req, res) => {
   }
 
   try {
-    const { userId, items } = req.body;
-    const user = await User.findById(userId);
+    const { items } = req.body;
+    const user = await User.findById(req.user.id);
 
     if (!user) {
       return res.status(403).send({ error: 'User not found' });
@@ -206,8 +206,8 @@ const returnItems = async (req, res) => {
   }
 
   try {
-    const { userId, items } = req.body;
-    const user = await User.findById(userId);
+    const { items } = req.body;
+    const user = await User.findById(req.user.id);
 
     if (!user) {
       return res.status(403).send({ error: 'User not found' });
@@ -391,6 +391,7 @@ const rentItems = async (req, res) => {
     if (!rent) {
       return res.status(404).send({ error: 'rent not found' });
     }
+    console.log(rent.items);
 
     for (const item of rent.items) {
       const { name, quantity } = item;
@@ -398,11 +399,11 @@ const rentItems = async (req, res) => {
       const i = await Item.findOne({ name: n });
 
       i.amount -= quantity;
-      await Rent.findByIdAndDelete(id);
       await i.save();
-
-      return res.status(204).send();
     }
+
+    await Rent.findByIdAndDelete(id);
+    return res.status(204).send();
   } catch (e) {
     res.status(500).send({ error: e.message });
   }

@@ -74,7 +74,7 @@ router.patch(
 );
 
 router.patch(
-  '/forget-password',
+  '/forgot-password',
   [
     check('email').notEmpty().withMessage('email cant be empty'),
     check('email').normalizeEmail().isEmail().withMessage('email is invalid'),

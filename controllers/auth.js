@@ -125,6 +125,7 @@ const refresh = async (req, res) => {
     }
     jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
       if (err) return res.status(403).send();
+      console.log(user);
       const accessToken = jwtService.generateToken(user);
       res.json({ accessToken: accessToken });
     });
@@ -295,7 +296,7 @@ const forgotPassword = async (req, res) => {
   // Generate a token
   const token = crypto.randomBytes(32).toString('hex');
   user.resetPasswordToken = token;
-  user.resetPasswordExpires = Date.now() + 3600000; // 1 hour from now
+  user.resetPasswordExpires = Date.now() + 3600000;
 
   await user.save();
 

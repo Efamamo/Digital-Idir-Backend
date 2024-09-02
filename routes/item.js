@@ -28,7 +28,6 @@ router.patch(
   '/borrow',
   authenticateToken,
   [
-    check('userId').notEmpty().withMessage('userId is required'),
     check('items')
       .notEmpty()
       .withMessage('items are required')
@@ -48,7 +47,6 @@ router.patch(
   '/return',
   authenticateToken,
   [
-    check('userId').notEmpty().withMessage('userId is required'),
     check('items')
       .notEmpty()
       .withMessage('items are required')
