@@ -9,7 +9,6 @@ const passwordService = require('../services/password-service');
 const jwtService = require('../services/jwt-service');
 const sendVerification = require('../cron/verification');
 const sendPasswordResetLink = require('../cron/reset-link');
-const { use } = require('passport');
 
 const signup = async (req, res) => {
   const errors = validationResult(req);
@@ -183,7 +182,67 @@ const verifyToken = async (req, res) => {
     user.tokenExpiration = undefined;
     await user.save();
 
-    res.send('Email successfully verified');
+    res.send(`
+          <!DOCTYPE html>
+          <html lang="en">
+            <head>
+              <meta charset="UTF-8">
+              <meta http-equiv="X-UA-Compatible" content="IE=edge">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <style>
+                body {
+                  font-family: Arial, sans-serif;
+                  background-color: #f4f4f4;
+                  padding: 20px;
+                }
+                .container {
+                  max-width: 600px;
+                  margin: 0 auto;
+                  background-color: #ffffff;
+                  padding: 30px;
+                  border-radius: 8px;
+                  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                }
+                .header {
+                  text-align: center;
+                  padding-bottom: 20px;
+                }
+                .header h1 {
+                  color: #333;
+                }
+                .content {
+                  text-align: center;
+                  color: #555;
+                  line-height: 1.6;
+                }
+                .content p {
+                  margin: 20px 0;
+                }
+                .footer {
+                  text-align: center;
+                  margin-top: 30px;
+                  color: #888;
+                  font-size: 12px;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>Email Verification Successful!</h1>
+                </div>
+                <div class="content">
+                  <p>Congratulations! Your email has been successfully verified.</p>
+                  <p>Thank you for confirming your email address. You can now enjoy all the features and benefits of our service.</p>
+                  <p>If you have any questions, feel free to contact our support team.</p>
+                </div>
+                <div class="footer">
+                  <p>&copy; 2024 Digital Idir. All rights reserved.</p>
+                </div>
+              </div>
+            </body>
+          </html>
+        `);
   } catch (error) {
     res.status(500).send('Internal server error');
   }

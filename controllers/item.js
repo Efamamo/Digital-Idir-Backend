@@ -409,6 +409,20 @@ const rentItems = async (req, res) => {
   }
 };
 
+const getRent = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const rent = await Rent.findById(id);
+    if (!rent) {
+      return res.status(404).send({ error: 'rent not found' });
+    }
+
+    return res.json(rent);
+  } catch (e) {
+    res.status(500).send({ error: e });
+  }
+};
+
 const returnRentItems = async (req, res) => {
   const errors = validationResult(req);
 
@@ -463,3 +477,4 @@ exports.checkoutSession = checkoutSession;
 exports.stripeSuccess = stripeSuccess;
 exports.rentItems = rentItems;
 exports.returnRentItems = returnRentItems;
+exports.getRent = getRent;

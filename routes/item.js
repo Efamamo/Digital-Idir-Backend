@@ -108,6 +108,13 @@ router.patch(
   itemController.rentItems
 );
 
+router.get(
+  '/rent/:id',
+  authenticateToken,
+  authorizeAdmin,
+  itemController.getRent
+);
+
 router.patch(
   '/:id',
   authenticateToken,
