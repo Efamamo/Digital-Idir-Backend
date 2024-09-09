@@ -10,7 +10,7 @@ passport.use(
     {
       //options for staratagy
       callbackURL:
-        'https://brainzacademy-backend-1.onrender.com/api/v1/auth/callback',
+        'https://digital-idir-backend.onrender.com/api/v1/auth/callback',
       clientID: process.env.GOOGLE_ID,
       clientSecret: process.env.GOOGLE_SECRET,
     },
