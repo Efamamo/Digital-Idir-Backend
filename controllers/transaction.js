@@ -142,7 +142,7 @@ const verifyPayment = async (req, res) => {
 };
 
 const getUserTransactions = async (req, res) => {
-  const userId = req.body.id;
+  const userId = req.user.id;
   try {
     const transactions = await Transaction.find({ userId, isVerified: true });
     return res.json(transactions);
