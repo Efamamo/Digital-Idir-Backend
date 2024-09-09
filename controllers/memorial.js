@@ -78,7 +78,7 @@ const addMemorial = async (req, res) => {
       dateOfPassing,
     });
 
-    const result = await newMemorial.save();
+    await newMemorial.save();
     return res.status(201).json(newMemorial);
   } catch (e) {
     if (req.file) {
@@ -109,6 +109,32 @@ const updateMemorial = async (req, res) => {
       return res.status(404).send({ error: 'memorial not found' });
     }
     const { name, description, dateOfBirth, dateOfPassing } = req.body;
+
+    // Get today's date
+    const today = new Date();
+
+    // Convert date strings to Date objects
+    const birthDate = new Date(dateOfBirth);
+    const passingDate = new Date(dateOfPassing);
+
+    // Validation checks
+    if (birthDate > today) {
+      return res
+        .status(400)
+        .json({ error: 'Date of birth cannot be in the future' });
+    }
+
+    if (passingDate > today) {
+      return res
+        .status(400)
+        .json({ error: 'Date of passing cannot be in the future' });
+    }
+
+    if (passingDate <= birthDate) {
+      return res
+        .status(400)
+        .json({ error: 'Date of passing must be after the date of birth' });
+    }
 
     memorial.name = name;
     memorial.description = description;
