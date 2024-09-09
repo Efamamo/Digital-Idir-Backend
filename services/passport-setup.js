@@ -9,7 +9,8 @@ passport.use(
   new GoogleStrategy(
     {
       //options for staratagy
-      callbackURL: 'api/v1/auth/callback',
+      callbackURL:
+        'https://brainzacademy-backend-1.onrender.com/api/v1/auth/callback',
       clientID: process.env.GOOGLE_ID,
       clientSecret: process.env.GOOGLE_SECRET,
     },
