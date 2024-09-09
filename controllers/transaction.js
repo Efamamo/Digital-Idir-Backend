@@ -27,7 +27,7 @@ const monthlyPayment = async (req, res) => {
     phone_number: req.body.phoneNumber,
     tx_ref: tx,
     callback_url: 'https://webhook.site/077164d6-29cb-40df-ba29-8a00e59a7e60',
-    return_url: `http://localhost:5000/api/v1/transactions/verify?id=${tx}`,
+    return_url: `https://digital-idir-backend.onrender.com/api/v1/transactions/verify?id=${tx}`,
     'customization[title]': 'Payment for my favourite merchant',
     'customization[description]': 'I love online payments',
     'meta[hide_receipt]': 'true',
