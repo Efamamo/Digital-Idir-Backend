@@ -38,6 +38,18 @@ const addEvent = async (req, res) => {
 
   try {
     const { title, description, date, location } = req.body;
+    const today = new Date();
+
+    // Convert date strings to Date objects
+    const edate = new Date(date);
+
+    // Validation checks
+    if (edate < today) {
+      return res.status(400).json({
+        errors: { date: 'Date of event cannot be in the past' },
+      });
+    }
+
     const newEvent = new Event({
       title,
       description,
@@ -70,6 +82,18 @@ const updateEvent = async (req, res) => {
       return res.status(404).send({ error: 'event not found' });
     }
     const { title, description, date, location } = req.body;
+
+    const today = new Date();
+
+    // Convert date strings to Date objects
+    const edate = new Date(date);
+
+    // Validation checks
+    if (edate < today) {
+      return res.status(400).json({
+        errors: { date: 'Date of event cannot be in the past' },
+      });
+    }
 
     event.title = title;
     event.description = description;
