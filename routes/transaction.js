@@ -8,7 +8,7 @@ router.post(
   authenticateToken,
   transactionController.monthlyPayment
 );
-router.patch('/verify', transactionController.verifyPayment);
+router.get('/verify', transactionController.verifyPayment);
 router.get('/', authenticateToken, transactionController.getUserTransactions);
 router.get('/:id', authenticateToken, transactionController.getTransactionById);
 

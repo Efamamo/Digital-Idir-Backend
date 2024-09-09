@@ -16,7 +16,7 @@ const getMemorialById = async (req, res) => {
   try {
     const memorial = await Memorial.findById(id);
     if (!memorial) {
-      return res.status(404).send({ error: 'memorial not found' });
+      return res.status(404).json({ error: 'memorial not found' });
     }
 
     return res.json(memorial);
@@ -39,7 +39,7 @@ const addMemorial = async (req, res) => {
       });
     }
 
-    return res.status(400).send({ errors: formattedErrors });
+    return res.status(400).json({ errors: formattedErrors });
   }
 
   try {
@@ -54,21 +54,23 @@ const addMemorial = async (req, res) => {
 
     // Validation checks
     if (birthDate > today) {
-      return res
-        .status(400)
-        .json({ error: 'Date of birth cannot be in the future' });
+      return res.status(400).json({
+        errors: { dateOfBirth: 'Date of birth cannot be in the future' },
+      });
     }
 
     if (passingDate > today) {
-      return res
-        .status(400)
-        .json({ error: 'Date of passing cannot be in the future' });
+      return res.status(400).json({
+        errors: { dateOfPassing: 'Date of passing cannot be in the future' },
+      });
     }
 
     if (passingDate <= birthDate) {
-      return res
-        .status(400)
-        .json({ error: 'Date of passing must be after the date of birth' });
+      return res.status(400).json({
+        errors: {
+          dateOfPassing: 'Date of passing must be after the date of birth',
+        },
+      });
     }
     const newMemorial = new Memorial({
       name,
@@ -86,7 +88,7 @@ const addMemorial = async (req, res) => {
         console.log(err);
       });
     }
-    res.status(500).send(e);
+    res.status(500).json({ errors: { server: 'server error' } });
   }
 };
 
@@ -99,14 +101,14 @@ const updateMemorial = async (req, res) => {
       formattedErrors[error.path] = error.msg;
     });
 
-    return res.status(400).send({ errors: formattedErrors });
+    return res.status(400).json({ errors: formattedErrors });
   }
 
   const id = req.params.id;
   try {
     const memorial = await Memorial.findById(id);
     if (!memorial) {
-      return res.status(404).send({ error: 'memorial not found' });
+      return res.status(404).json({ error: 'memorial not found' });
     }
     const { name, description, dateOfBirth, dateOfPassing } = req.body;
 

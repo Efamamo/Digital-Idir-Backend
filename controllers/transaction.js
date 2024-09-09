@@ -74,7 +74,67 @@ const verifyPayment = async (req, res) => {
     transaction.isVerified = true;
     await transaction.save();
 
-    res.status(201).send(transaction);
+    res.send(`
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta http-equiv="X-UA-Compatible" content="IE=edge">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              background-color: #f4f4f4;
+              padding: 20px;
+            }
+            .container {
+              max-width: 600px;
+              margin: 0 auto;
+              background-color: #ffffff;
+              padding: 30px;
+              border-radius: 8px;
+              box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+              text-align: center;
+              padding-bottom: 20px;
+            }
+            .header h1 {
+              color: #333;
+            }
+            .content {
+              text-align: center;
+              color: #555;
+              line-height: 1.6;
+            }
+            .content p {
+              margin: 20px 0;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 30px;
+              color: #888;
+              font-size: 12px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Transaction Successful!</h1>
+            </div>
+            <div class="content">
+              <p>Congratulations! Your transuction has been successfully verified.</p>
+              <p>Thank you for making your monthely due. </p>
+              <p>If you have any questions, feel free to contact our support team.</p>
+            </div>
+            <div class="footer">
+              <p>&copy; 2024 Digital Idir. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `);
   } catch (err) {
     console.error(`Error retrieving session: ${err.message}`);
     res.status(500).send({ error: err });
@@ -84,7 +144,7 @@ const verifyPayment = async (req, res) => {
 const getUserTransactions = async (req, res) => {
   const userId = req.body.id;
   try {
-    const transactions = await Transaction.find({ userId });
+    const transactions = await Transaction.find({ userId, isVerified: true });
     return res.json(transactions);
   } catch (e) {
     res.status(500).send({ error: 'server error' });
