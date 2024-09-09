@@ -144,13 +144,12 @@ const borrowItem = async (req, res) => {
     const errors = [];
 
     for (const item of items) {
-      const { name, amount } = item;
-      const n = name.toLowerCase();
-      const i = await Item.findOne({ name: n });
+      const { id, amount } = item;
+      const i = await Item.findById(id);
       if (!i) {
-        errors.push({ name: `${name} not found` });
+        errors.push({ id: `item with id ${id} not found` });
       } else if (i.amount < amount) {
-        errors.push({ name: `${name} amount is unavailable` });
+        errors.push({ name: `${i.name} amount is unavailable` });
       }
     }
 
@@ -159,16 +158,15 @@ const borrowItem = async (req, res) => {
     }
 
     for (const item of items) {
-      const { name, amount } = item;
-      const n = name.toLowerCase();
-      const i = await Item.findOne({ name: n });
+      const { id, amount } = item;
+      const i = await Item.findById(id);
 
       i.amount -= amount;
 
       let isAlreadyIn = false;
 
       for (let j = 0; j < user.borrowedItems.length; j++) {
-        if (user.borrowedItems[j].name === name.toLowerCase()) {
+        if (user.borrowedItems[j].id === id) {
           console.log('changing amount');
           user.borrowedItems[j].amount += amount;
           isAlreadyIn = true;
@@ -178,7 +176,7 @@ const borrowItem = async (req, res) => {
       }
 
       if (!isAlreadyIn) {
-        user.borrowedItems.push({ name: n, amount, date: new Date() });
+        user.borrowedItems.push({ id, amount, date: new Date() });
       }
 
       await i.save();
@@ -216,26 +214,25 @@ const returnItems = async (req, res) => {
     const errors = [];
 
     for (const item of items) {
-      const { name, amount } = item;
-      const n = name.toLowerCase();
-      const i = await Item.findOne({ name: n });
+      const { id, amount } = item;
+      const i = await Item.findById(id);
       if (!i) {
-        errors.push(`name: ${name} not found`);
+        errors.push(`name: item with id ${id} not found`);
       }
       let exists = false;
       for (const uitems of user.borrowedItems) {
-        if (n == uitems.name) {
+        if (id == uitems.id) {
           exists = true;
           if (uitems.amount < amount) {
             errors.push(
-              `amount :  you only borrowed ${uitems.amount} ${uitems.name}s`
+              `amount :  you only borrowed ${uitems.amount} ${i.name}s`
             );
           }
         }
       }
 
       if (!exists) {
-        errors.push(`name: you did not borrow ${name}`);
+        errors.push(`name: you did not borrow ${i.name}`);
       }
     }
 
@@ -244,16 +241,15 @@ const returnItems = async (req, res) => {
     }
 
     for (const item of items) {
-      const { name, amount } = item;
-      const n = name.toLowerCase();
-      const i = await Item.findOne({ name: n });
+      const { id, amount } = item;
+      const i = await Item.findById(id);
 
       i.amount += amount;
 
       let fullyReturned = false;
 
       for (let j = 0; j < user.borrowedItems.length; j++) {
-        if (user.borrowedItems[j].name === name.toLowerCase()) {
+        if (user.borrowedItems[j].id === id) {
           user.borrowedItems[j].amount -= amount;
           if (user.borrowedItems[j].amount == 0) {
             fullyReturned = true;
@@ -265,7 +261,7 @@ const returnItems = async (req, res) => {
 
       if (fullyReturned) {
         user.borrowedItems = user.borrowedItems.filter(
-          (borrowedItem) => borrowedItem.name !== n
+          (borrowedItem) => borrowedItem.id !== id
         );
         user.markModified('borrowedItems');
       }
@@ -370,26 +366,25 @@ const checkoutSession = async (req, res) => {
 };
 
 const rentItems = async (req, res) => {
-  const id = req.params.id;
+  const Rid = req.params.id;
   try {
-    const rent = await Rent.findById(id);
+    const rent = await Rent.findById(Rid);
     if (!rent) {
       return res.status(404).send({ error: 'rent not found' });
     }
-    console.log(rent.items);
 
     for (const item of rent.items) {
-      const { name, quantity } = item;
-      const n = name.toLowerCase();
-      const i = await Item.findOne({ name: n });
+      const { id, amount } = item;
+      const i = await Item.findById(id);
 
-      i.amount -= quantity;
+      i.amount -= amount;
       await i.save();
     }
 
-    await Rent.findByIdAndDelete(id);
+    await Rent.findByIdAndDelete(Rid);
     return res.status(204).send();
   } catch (e) {
+    console.log(e);
     res.status(500).send({ error: e.message });
   }
 };

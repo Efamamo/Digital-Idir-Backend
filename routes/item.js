@@ -32,7 +32,7 @@ router.patch(
       .withMessage('items are required')
       .isArray()
       .withMessage('items should be an array'),
-    check('items.*.name').notEmpty().withMessage('Each item must have a name'),
+    check('items.*.id').notEmpty().withMessage('Each item must have id'),
     check('items.*.amount')
       .notEmpty()
       .withMessage('Each item must have an amount')
@@ -51,7 +51,7 @@ router.patch(
       .withMessage('items are required')
       .isArray()
       .withMessage('items should be an array'),
-    check('items.*.name').notEmpty().withMessage('Each item must have a name'),
+    check('items.*.id').notEmpty().withMessage('Each item must have id'),
     check('items.*.amount')
       .notEmpty()
       .withMessage('Each item must have an amount')
