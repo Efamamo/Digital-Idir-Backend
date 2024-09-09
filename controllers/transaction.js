@@ -1,66 +1,83 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const User = require('../models/user');
 const Transaction = require('../models/transaction');
-const transaction = require('../models/transaction');
+const dotenv = require('dotenv');
+
+dotenv.config();
 const monthlyPayment = async (req, res) => {
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card'],
-    mode: 'payment', // 'payment' mode for one-time payments
-    line_items: [
-      {
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: 'Monthly Payment', // Description of the payment
-          },
-          unit_amount: 100000, // Amount in cents (1000 USD = 100000 cents)
-        },
-        quantity: 1, // Only one "item" for the payment
-      },
-    ],
-    success_url:
-      'http://localhost:5000/api/v1/transactions/success?session_id={CHECKOUT_SESSION_ID}', // Add session ID to the URL
-    cancel_url: 'http://localhost:5050',
+  const user = await User.findById(req.user.id);
+
+  if (!user) {
+    return res.status(403).send({ error: 'User not found' });
+  }
+
+  const newTransaction = new Transaction({
+    name: 'Monthely Payment',
+    userId: user._id,
+    amount: 1000,
   });
-  res.redirect(session.url);
+
+  const tx = `chewatatest-${newTransaction._id}`;
+  var myHeaders = new Headers();
+  myHeaders.append('Authorization', `Bearer ${process.env.CHAPA_SECRET_KEY}`);
+  myHeaders.append('Content-Type', 'application/json');
+
+  var raw = JSON.stringify({
+    amount: 1000,
+    currency: 'ETB',
+    phone_number: req.body.phoneNumber,
+    tx_ref: tx,
+    callback_url: 'https://webhook.site/077164d6-29cb-40df-ba29-8a00e59a7e60',
+    return_url: `http://localhost:5000/api/v1/transactions/verify?id=${tx}`,
+    'customization[title]': 'Payment for my favourite merchant',
+    'customization[description]': 'I love online payments',
+    'meta[hide_receipt]': 'true',
+  });
+
+  var requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: raw,
+  };
+
+  const response = await fetch(
+    'https://api.chapa.co/v1/transaction/initialize',
+    requestOptions
+  );
+
+  const result = await response.json();
+
+  if (result.status === 'success') {
+    await newTransaction.save();
+
+    res.send(result.data.checkout_url);
+  } else {
+    return res.status(500).json('server error');
+  }
 };
 
-const stripeSuccess = async (req, res) => {
-  const session_id = req.query.session_id;
+const verifyPayment = async (req, res) => {
+  const chapa_id = req.query.id;
 
-  if (!session_id) {
-    return res.status(400).send({ error: 'No session ID provided.' });
+  if (!chapa_id) {
+    return res.status(400).send({ error: 'No ID provided.' });
   }
 
   try {
-    // Retrieve the session and expand the line_items field
-    const session = await stripe.checkout.sessions.retrieve(session_id, {
-      expand: ['line_items'], // This tells Stripe to include line_items in the response
-    });
-
-    // Extract the customer details
-    const customerEmail = session.customer_details.email;
-    const user = await User.findOne({ email: customerEmail });
-    if (!user) {
-      return res.status(404).send({ error: 'no user with given email' });
+    const arr = chapa_id.split('-');
+    if (arr.length != 2) {
+      return res.status(400).send({ error: 'ID provided is invalid.' });
     }
-    const userId = user._id;
-    const name = session.line_items.data[0].description;
-    const amount = session.line_items.data[0].price.unit_amount / 100;
 
-    const newTransaction = new Transaction({
-      name,
-      userId,
-      amount,
-      date: new Date(),
-    });
+    const id = arr[1];
+    const transaction = await Transaction.findById(id);
 
-    await newTransaction.save();
+    transaction.isVerified = true;
+    await transaction.save();
 
-    res.status(201).send(newTransaction);
+    res.status(201).send(transaction);
   } catch (err) {
     console.error(`Error retrieving session: ${err.message}`);
-    res.status(500).send({ error: err.message });
+    res.status(500).send({ error: err });
   }
 };
 
@@ -88,6 +105,6 @@ const getTransactionById = async (req, res) => {
 };
 
 exports.monthlyPayment = monthlyPayment;
-exports.stripeSuccess = stripeSuccess;
+exports.verifyPayment = verifyPayment;
 exports.getTransactionById = getTransactionById;
 exports.getUserTransactions = getUserTransactions;

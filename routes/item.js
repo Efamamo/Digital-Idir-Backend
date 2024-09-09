@@ -8,7 +8,6 @@ const itemController = require('../controllers/item');
 const router = express.Router();
 
 router.get('/', authenticateToken, itemController.getItems);
-router.get('/success', itemController.stripeSuccess);
 
 router.get('/:id', authenticateToken, itemController.getItemById);
 router.post(
@@ -64,7 +63,6 @@ router.patch(
 
 router.patch(
   '/order-rent',
-  authenticateToken,
   [
     check('items')
       .notEmpty()
@@ -77,6 +75,7 @@ router.patch(
       .withMessage('Each item must have an amount')
       .isInt({ gt: 0 })
       .withMessage('Each item amount must be a positive integer'),
+    check('phoneNumber').isMobilePhone().withMessage('Invalid phone number'),
   ],
   itemController.checkoutSession
 );

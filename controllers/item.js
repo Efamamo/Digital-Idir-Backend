@@ -312,75 +312,60 @@ const checkoutSession = async (req, res) => {
       return res.status(400).send({ errors });
     }
 
-    const lineItems = await Promise.all(
-      req.body.items.map(async (item) => {
-        const my_item = await Item.findById(item.id);
-        return {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: my_item.name,
-            },
-            unit_amount: my_item.price * 100, // Stripe requires amount in cents
-          },
-          quantity: item.amount,
-        };
-      })
-    );
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'payment',
-      line_items: lineItems,
-      success_url:
-        'http://localhost:5000/api/v1/items/success?session_id={CHECKOUT_SESSION_ID}', // Add session ID to the URL
-      cancel_url: 'http://localhost:5050',
-    });
-    res.send({ url: session.url });
-  } catch (e) {
-    res.status(500).send({ error: e.message });
-  }
-};
+    let total = 0;
 
-const stripeSuccess = async (req, res) => {
-  const session_id = req.query.session_id;
-
-  if (!session_id) {
-    return res.status(400).send({ error: 'No session ID provided.' });
-  }
-
-  try {
-    // Retrieve the session and expand the line_items field
-    const session = await stripe.checkout.sessions.retrieve(session_id, {
-      expand: ['line_items'], // This tells Stripe to include line_items in the response
-    });
-
-    // Extract the customer details
-    const customerEmail = session.customer_details.email;
-    const customerName = session.customer_details.name;
-    const totalAmount = session.amount_total / 100; // Convert to dollars if needed
-
-    // Extract line items details
-    const items = session.line_items.data.map((item) => ({
-      name: item.description, // This is the product name
-      quantity: item.quantity,
-      unit_amount: item.price.unit_amount / 100, // Convert to dollars if needed
-    }));
+    for (const item of req.body.items) {
+      const i = await Item.findById(item.id);
+      total += item.amount * i.price;
+    }
 
     const newRent = new Rent({
-      email: customerEmail,
-      items,
-      name: customerName,
-      totalAmount,
+      email: req.body.email,
+      items: req.body.items,
+      totalAmount: total,
     });
 
-    await newRent.save();
+    const tx = `chewatatest-${newRent._id}`;
+    var myHeaders = new Headers();
+    myHeaders.append('Authorization', `Bearer ${process.env.CHAPA_SECRET_KEY}`);
+    myHeaders.append('Content-Type', 'application/json');
 
-    sendRentNotification(newRent);
+    var raw = JSON.stringify({
+      amount: total,
+      currency: 'ETB',
+      email: req.body.email,
+      phone_number: req.body.phoneNumber,
+      tx_ref: tx,
+      callback_url: 'https://webhook.site/077164d6-29cb-40df-ba29-8a00e59a7e60',
 
-    res.status(201).send();
-  } catch (err) {
-    console.error(`Error retrieving session: ${err.message}`);
-    res.status(500).send({ error: 'Failed to retrieve session details.' });
+      'customization[title]': 'Payment for my favourite merchant',
+      'customization[description]': 'I love online payments',
+      'meta[hide_receipt]': 'true',
+    });
+
+    var requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: raw,
+    };
+
+    const response = await fetch(
+      'https://api.chapa.co/v1/transaction/initialize',
+      requestOptions
+    );
+
+    const result = await response.json();
+
+    if (result.status === 'success') {
+      await newRent.save();
+
+      res.send(result.data.checkout_url);
+    } else {
+      return res.status(500).json('server error');
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).send({ error: e });
   }
 };
 
@@ -474,7 +459,6 @@ exports.deleteItem = deleteItem;
 exports.borrowItem = borrowItem;
 exports.returnItems = returnItems;
 exports.checkoutSession = checkoutSession;
-exports.stripeSuccess = stripeSuccess;
 exports.rentItems = rentItems;
 exports.returnRentItems = returnRentItems;
 exports.getRent = getRent;

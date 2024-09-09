@@ -11,6 +11,7 @@ const transactionSchema = new mongoose.Schema({
     type: Date,
     default: Date.now, // Optionally set default date to now
   },
+  isVerified: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model('Transaction', transactionSchema);

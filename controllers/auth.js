@@ -28,7 +28,7 @@ const signup = async (req, res) => {
   const { username, email, password, phoneNumber } = req.body;
 
   try {
-    u = await User.findOne({ email });
+    let u = await User.findOne({ email });
 
     if (u) {
       if (req.file) {
@@ -38,6 +38,20 @@ const signup = async (req, res) => {
       }
 
       return res.status(409).send({ error: `email ${email} is taken` });
+    }
+
+    u = await User.findOne({ phoneNumber });
+
+    if (u) {
+      if (req.file) {
+        fs.unlink(req.file.path, (err) => {
+          console.log(err);
+        });
+      }
+
+      return res
+        .status(409)
+        .send({ error: `phoneNumber ${phoneNumber} is taken` });
     }
 
     const hashedPassword = await passwordService.hashPassword(password);
@@ -323,7 +337,7 @@ const changePassword = async (req, res) => {
       return res.status(401).send({ error: 'old Password is incorrect' });
     }
 
-    const hashedPassword = await passwordService.hashPassword(newPassword);
+    const hashedPassword = await pasgivenswordService.hashPassword(newPassword);
 
     user.password = hashedPassword;
     await user.save();

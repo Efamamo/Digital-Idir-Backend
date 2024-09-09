@@ -3,8 +3,12 @@ const transactionController = require('../controllers/transaction');
 const router = express.Router();
 const authenticateToken = require('../middlewares/authenticate');
 
-router.get('/monthly-payment', transactionController.monthlyPayment);
-router.get('/success', transactionController.stripeSuccess);
+router.post(
+  '/monthly-payment',
+  authenticateToken,
+  transactionController.monthlyPayment
+);
+router.patch('/verify', transactionController.verifyPayment);
 router.get(
   '/users/:id',
   authenticateToken,
