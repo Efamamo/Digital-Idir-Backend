@@ -9,11 +9,7 @@ router.post(
   transactionController.monthlyPayment
 );
 router.patch('/verify', transactionController.verifyPayment);
-router.get(
-  '/users/:id',
-  authenticateToken,
-  transactionController.getUserTransactions
-);
+router.get('/', authenticateToken, transactionController.getUserTransactions);
 router.get('/:id', authenticateToken, transactionController.getTransactionById);
 
 module.exports = router;

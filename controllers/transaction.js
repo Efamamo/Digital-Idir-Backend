@@ -82,7 +82,7 @@ const verifyPayment = async (req, res) => {
 };
 
 const getUserTransactions = async (req, res) => {
-  const userId = req.params.id;
+  const userId = req.body.id;
   try {
     const transactions = await Transaction.find({ userId });
     return res.json(transactions);
