@@ -3,6 +3,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+require('dotenv').config();
 require('./services/passport-setup');
 require('./cron/reminder');
 require('./cron/return-item');
@@ -16,7 +17,7 @@ const itemRouter = require('./routes/item');
 const transactionRouter = require('./routes/transaction');
 
 mongoose
-  .connect('mongodb://localhost:27017/digital-idir')
+  .connect(process.env.DATABASE_URL)
   .then(() => {
     console.log('Connected To The DataBase');
   })
