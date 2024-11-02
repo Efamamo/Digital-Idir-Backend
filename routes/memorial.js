@@ -3,6 +3,7 @@ const { check } = require('express-validator');
 const authenticateToken = require('../middlewares/authenticate');
 const authorizeAdmin = require('../middlewares/authorize-admin');
 const memorialController = require('../controllers/memorial');
+const fileUpload = require('../middlewares/file-upload');
 const router = express.Router();
 
 router.get('/', authenticateToken, memorialController.getMemorials);
@@ -11,6 +12,8 @@ router.post(
   '/',
   authenticateToken,
   authorizeAdmin,
+  fileUpload.single('image'),
+
   [
     check('name').notEmpty().withMessage('name is required'),
     check('dateOfBirth').isDate().withMessage('dateOfBirth is invalid'),
@@ -23,6 +26,8 @@ router.patch(
 
   authenticateToken,
   authorizeAdmin,
+  fileUpload.single('image'),
+
   [
     check('name').notEmpty().withMessage('name is required'),
     check('dateOfBirth').isDate().withMessage('dateOfBirth is invalid'),

@@ -49,7 +49,6 @@ const addItem = async (req, res) => {
 
   try {
     const { name, price, amount } = req.body;
-    console.log(req.file);
 
     const newItem = new Item({
       name: name.toLowerCase(),
@@ -137,7 +136,6 @@ const borrowItem = async (req, res) => {
   try {
     const { items } = req.body;
     const user = await User.findById(req.user.id);
-    item;
     if (!user) {
       return res.status(403).send({ error: 'User not found' });
     }

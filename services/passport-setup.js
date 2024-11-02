@@ -8,7 +8,6 @@ require('dotenv').config();
 passport.use(
   new GoogleStrategy(
     {
-      //options for staratagy
       callbackURL: 'http://localhost:5000/api/v1/auth/callback',
       clientID: process.env.GOOGLE_ID,
       clientSecret: process.env.GOOGLE_SECRET,
