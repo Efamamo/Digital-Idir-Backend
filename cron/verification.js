@@ -1,7 +1,7 @@
 const sgMail = require('@sendgrid/mail');
 
 const sendVerification = async (user) => {
-  const verificationUrl = `https://digital-idir-backend.onrender.com/api/v1/auth/verify/${user.verificationToken}`;
+  const verificationUrl = `http://localhost:5000/api/v1/auth/verify/${user.verificationToken}`;
   const msg = {
     to: user.email,
     from: `Digital Idir <${process.env.SENDGRID_SENDER_EMAIL}>`,

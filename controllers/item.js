@@ -5,6 +5,7 @@ const sendRentNotification = require('../cron/rent-notification');
 const fs = require('fs');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { validationResult } = require('express-validator');
+const sendPaymentNotification = require('../cron/send-rent');
 require('dotenv').config();
 
 const getItems = async (req, res) => {
@@ -12,14 +13,13 @@ const getItems = async (req, res) => {
     const items = await Item.find();
     res.json(items);
   } catch (e) {
-    res.status(500).send({ error: 'server error' });
+    res.status(500).json({ error: 'server error' });
   }
 };
 
 const getItemById = async (req, res) => {
   try {
     const id = req.params.id;
-    console.log(id);
     const item = await Item.findById(id);
     if (!item) {
       return res.status(404).send({ error: 'item not found' });
@@ -49,6 +49,7 @@ const addItem = async (req, res) => {
 
   try {
     const { name, price, amount } = req.body;
+    console.log(req.file);
 
     const newItem = new Item({
       name: name.toLowerCase(),
@@ -136,7 +137,7 @@ const borrowItem = async (req, res) => {
   try {
     const { items } = req.body;
     const user = await User.findById(req.user.id);
-
+    item;
     if (!user) {
       return res.status(403).send({ error: 'User not found' });
     }
@@ -280,6 +281,7 @@ const returnItems = async (req, res) => {
 
 const checkoutSession = async (req, res) => {
   const errors = validationResult(req);
+  console.log(errors);
 
   if (!errors.isEmpty()) {
     const formattedErrors = {};
@@ -287,7 +289,7 @@ const checkoutSession = async (req, res) => {
       formattedErrors[error.path] = error.msg;
     });
 
-    return res.status(400).send({ errors: formattedErrors });
+    return res.status(400).json({ errors: formattedErrors });
   }
 
   try {
@@ -354,10 +356,11 @@ const checkoutSession = async (req, res) => {
 
     if (result.status === 'success') {
       await newRent.save();
+      await sendPaymentNotification(req.body.email);
 
-      res.send(result.data.checkout_url);
+      res.json(result.data.checkout_url);
     } else {
-      return res.status(500).json('server error');
+      return res.json(500).json('server error');
     }
   } catch (e) {
     console.log(e);

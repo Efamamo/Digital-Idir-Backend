@@ -7,7 +7,7 @@ const authorizeAdmin = require('../middlewares/authorize-admin');
 const itemController = require('../controllers/item');
 const router = express.Router();
 
-router.get('/', authenticateToken, itemController.getItems);
+router.get('/', itemController.getItems);
 
 router.get('/:id', authenticateToken, itemController.getItemById);
 router.post(

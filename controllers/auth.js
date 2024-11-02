@@ -23,7 +23,7 @@ const signup = async (req, res) => {
       });
     }
 
-    return res.status(400).send({ errors: formattedErrors });
+    return res.status(400).json({ errors: formattedErrors });
   }
   const { username, email, password, phoneNumber } = req.body;
 
@@ -37,7 +37,7 @@ const signup = async (req, res) => {
         });
       }
 
-      return res.status(409).send({ error: `email ${email} is taken` });
+      return res.status(409).json({ error: `email ${email} is taken` });
     }
 
     u = await User.findOne({ phoneNumber });
@@ -51,7 +51,7 @@ const signup = async (req, res) => {
 
       return res
         .status(409)
-        .send({ error: `phoneNumber ${phoneNumber} is taken` });
+        .json({ error: `phoneNumber ${phoneNumber} is taken` });
     }
 
     const hashedPassword = await passwordService.hashPassword(password);
@@ -68,7 +68,7 @@ const signup = async (req, res) => {
     sendVerification(newUser);
 
     const user = await newUser.save();
-    return res.status(201).send({ message: 'verify your email' });
+    return res.status(201).json({ message: 'verify your email' });
   } catch (e) {
     console.log(e);
     if (req.file) {
@@ -89,27 +89,27 @@ const login = async (req, res) => {
       formattedErrors[error.path] = error.msg;
     });
 
-    return res.status(400).send({ errors: formattedErrors });
+    return res.status(400).json({ errors: formattedErrors });
   }
 
   const { email, password } = req.body;
   const user = await User.findOne({ email });
 
   if (!user) {
-    return res.status(401).send({ error: 'invalid credentials' });
+    return res.status(401).json({ error: 'invalid credentials' });
   }
 
   if (!user.password) {
-    return res.status(400).send({ error: 'user can only login using google' });
+    return res.status(400).json({ error: 'user can only login using google' });
   }
 
   if (!user.isVerified) {
-    return res.status(400).send({ error: 'email not verified' });
+    return res.status(400).json({ error: 'email not verified' });
   }
 
   const match = await passwordService.comparePasswords(password, user.password);
   if (!match) {
-    return res.status(401).send({ error: 'invalid credentials' });
+    return res.status(401).json({ error: 'invalid credentials' });
   }
 
   const token = jwtService.generateToken(user);
@@ -120,9 +120,9 @@ const login = async (req, res) => {
       token: refreshToken,
     });
     await newRefresh.save();
-    res.status(201).send({ accessToken: token, refreshToken: refreshToken });
+    res.status(201).json({ accessToken: token, refreshToken: refreshToken });
   } catch (e) {
-    res.status(500).send(e);
+    res.status(500).json(e);
   }
 };
 
@@ -166,12 +166,13 @@ const logout = async (req, res) => {
 const googleCallback = (req, res) => {
   if (req.user) {
     const { user, accessToken, refreshToken } = req.user;
+    console.log(accessToken);
+    console.log(refreshToken);
 
     if (accessToken && refreshToken) {
-      res.json({
-        accessToken,
-        refreshToken,
-      });
+      res.redirect(
+        `http://localhost:3000/callback?accessToken=${accessToken}&refreshToken=${refreshToken}`
+      );
     } else {
       res.json(user);
     }

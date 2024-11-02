@@ -27,13 +27,7 @@ mongoose
 
 const app = express();
 app.use('/uploads/images', express.static(path.join('uploads', 'images')));
-app.use(
-  cors({
-    origin: 'http://localhost:5173', // The origin of your frontend
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true, // Allow cookies to be sent with the request
-  })
-);
+app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
 app.use('/api/v1/auth', authRouter);

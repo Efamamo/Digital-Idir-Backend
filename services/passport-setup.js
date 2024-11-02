@@ -9,8 +9,7 @@ passport.use(
   new GoogleStrategy(
     {
       //options for staratagy
-      callbackURL:
-        'https://digital-idir-backend.onrender.com/api/v1/auth/callback',
+      callbackURL: 'http://localhost:5000/api/v1/auth/callback',
       clientID: process.env.GOOGLE_ID,
       clientSecret: process.env.GOOGLE_SECRET,
     },
@@ -24,7 +23,6 @@ passport.use(
 
       try {
         const u = await User.findOne({ email });
-
         if (u) {
           const token = jwtService.generateToken(u);
           const refreshToken = jwtService.generateRefreshToken(u);
@@ -32,7 +30,9 @@ passport.use(
           const newRefresh = new Refresh({
             token: refreshToken,
           });
+
           await newRefresh.save();
+          console.log(newRefresh);
           done(null, {
             user: u,
             accessToken: token,
