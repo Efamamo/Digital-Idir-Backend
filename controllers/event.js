@@ -37,29 +37,38 @@ const addEvent = async (req, res) => {
   }
 
   try {
-    const { title, description, date, location } = req.body;
+    const { title, description, startTime, endTime, location } = req.body;
     const today = new Date();
 
     // Convert date strings to Date objects
-    const edate = new Date(date);
+    const sdate = new Date(startTime);
+    const edate = new Date(endTime);
 
     // Validation checks
-    if (edate < today) {
+    if (sdate < today) {
       return res.status(400).json({
         errors: { date: 'Date of event cannot be in the past' },
+      });
+    }
+
+    if (sdate > edate) {
+      return res.status(400).json({
+        errors: { date: 'Start time cant be after end time' },
       });
     }
 
     const newEvent = new Event({
       title,
       description,
-      date,
+      startTime,
+      endTime,
       location,
     });
     const result = await newEvent.save();
 
     return res.status(201).json(newEvent);
   } catch (e) {
+    console.log(e);
     res.status(500).send(e);
   }
 };

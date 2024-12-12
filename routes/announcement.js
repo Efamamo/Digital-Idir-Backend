@@ -18,6 +18,7 @@ router.post(
   authenticateToken,
   authorizeAdmin,
   check('description').notEmpty().withMessage('description is required'),
+  check('title').notEmpty().withMessage('title is required'),
   announcementController.addAnnouncement
 );
 router.patch(

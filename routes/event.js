@@ -20,9 +20,20 @@ router.post(
       .isLength(10)
       .withMessage('minimum description length is 30'),
     check('location').notEmpty().withMessage('location is required'),
-    check('date').notEmpty().withMessage('date is required'),
-    check('date').isDate().withMessage('date is invalid format'),
+    check('startTime').notEmpty().withMessage('startTime is required'),
+    check('startTime')
+      .notEmpty()
+      .withMessage('startTime is required')
+      .isISO8601()
+      .withMessage('startTime is invalid format'),
+    check('endTime')
+      .notEmpty()
+      .withMessage('endTime is required')
+      .isISO8601()
+      .withMessage('endTime is invalid format'),
+    check('endTime').notEmpty().withMessage('endTime is required'),
   ],
+
   eventController.addEvent
 );
 router.patch(

@@ -171,7 +171,7 @@ const googleCallback = (req, res) => {
 
     if (accessToken && refreshToken) {
       res.redirect(
-        `http://localhost:3000/callback?accessToken=${accessToken}&refreshToken=${refreshToken}`
+        `https://digitalidir.vercel.app/callback?accessToken=${accessToken}&refreshToken=${refreshToken}`
       );
     } else {
       res.json(user);

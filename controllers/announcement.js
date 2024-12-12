@@ -38,9 +38,10 @@ const addAnnouncement = async (req, res) => {
   }
 
   try {
-    const { description } = req.body;
+    const { title, description } = req.body;
     const newAnnouncement = new Announcement({
       description,
+      title,
     });
 
     const result = await newAnnouncement.save();
